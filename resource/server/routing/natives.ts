@@ -45,23 +45,30 @@ export const voiceNatives = {
   deaf: (channel: number, source: number, deaf: boolean): void =>
     Citizen.invokeNative(HASH.deaf, channel, source, deaf),
   /** How far the player is heard in spatial channels (only shortens a channel's maxDistance; 0 = the channel's). */
-  range: (source: number, distance: number): void =>
-    Citizen.invokeNative(
-      HASH.range,
-      String(source),
-      float(distance),
-      Citizen.returnResultAnyway(),
+  range: (source: number, distance: number): boolean =>
+    Boolean(
+      Citizen.invokeNative(
+        HASH.range,
+        String(source),
+        float(distance),
+        Citizen.returnResultAnyway(),
+      ),
     ),
 };
 
 /**
  * Whether the server has `SET_PLAYER_VOICE_PROXIMITY_RANGE` (Enhanced build 177 and later): an older build throws on
- * the unknown hash; for a server id nobody has it answers without throwing.
+ * the unknown hash; for server id 0 (nobody) the native answers false (BOOL: 0 in JS), anything else is not it.
  */
 export function hasVoiceRange(): boolean {
   try {
-    voiceNatives.range(0, 0);
-    return true;
+    const answer: unknown = Citizen.invokeNative(
+      HASH.range,
+      "0",
+      0,
+      Citizen.returnResultAnyway(),
+    );
+    return answer === 0 || answer === false;
   } catch {
     return false;
   }

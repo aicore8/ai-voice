@@ -1,10 +1,14 @@
 import { every, type Job } from "@aifivem/lib/server";
+import { createLogger } from "@aifivem/lib/shared";
+import { ResourceName } from "common";
 import { RANGE_MAX } from "common/proximity";
 import { Bucket } from "./bucket";
 import type { VoiceChannel } from "./channel";
 import { flatChannel, leaveFlatChannel } from "./flatChannels";
 import { voiceNatives } from "./natives";
 import type { Router, Talker } from "./router";
+
+const log = createLogger(ResourceName);
 
 /**
  * FiveM for GTAV Enhanced: the server routes all audio.
@@ -25,6 +29,7 @@ export class EnhancedRouter implements Router {
   private readonly radios = new Map<number, VoiceChannel>();
   private readonly calls = new Map<number, VoiceChannel>();
   private readonly timer: Job;
+  private rangeFailed = false;
 
   /** `modeDistances`: the panel's ranges, whose channels stay while empty; `ranged`: the range native exists. */
   constructor(
@@ -41,11 +46,12 @@ export class EnhancedRouter implements Router {
     this.bucketOf.set(talker.source, bucketId);
     const bucket = this.bucket(bucketId);
     bucket.talkers.set(talker.source, talker);
+    // The range first: unmuted in a 100 m channel, the player must never be heard at that distance.
+    this.setRange(talker);
     const own = this.channelOf(talker);
     bucket.channel(own);
     for (const [distance, channel] of bucket.channels)
       channel.add(talker.source, talker.muted || distance !== own);
-    if (this.ranged) voiceNatives.range(talker.source, talker.distance);
   }
 
   forget(source: number): void {
@@ -70,7 +76,7 @@ export class EnhancedRouter implements Router {
     bucket.channel(own);
     for (const [distance, channel] of bucket.channels)
       channel.setMuted(talker.source, talker.muted || distance !== own);
-    if (this.ranged) voiceNatives.range(talker.source, talker.distance);
+    this.setRange(talker);
     for (const channel of this.calls.values())
       channel.setMuted(talker.source, talker.muted);
     if (talker.muted)
@@ -164,6 +170,15 @@ export class EnhancedRouter implements Router {
       : this.buckets.get(id)?.talkers.get(source);
   }
 
+  /** Ranged mode: the talker's range on the player (a false answer is logged once). */
+  private setRange(talker: Talker): void {
+    if (!this.ranged || voiceNatives.range(talker.source, talker.distance))
+      return;
+    if (!this.rangeFailed)
+      log.error(`voice range for ${talker.source} was refused`);
+    this.rangeFailed = true;
+  }
+
   /** The spatial channel a talker is heard in: the shared one, or the one of their range. */
   private channelOf(talker: Talker): number {
     return this.ranged ? RANGE_MAX : talker.distance;
@@ -182,7 +197,13 @@ export class EnhancedRouter implements Router {
   private watchBuckets(): void {
     for (const [source, id] of this.bucketOf) {
       const now = GetPlayerRoutingBucket(String(source));
-      if (now === id) continue;
+      if (now === id) {
+        // The deprecated client native MUMBLE_SET_TALKER_PROXIMITY writes the same range: written again each second,
+        // a client that changes its own is back at the server's range within 1 s.
+        const talker = this.ranged ? this.bucketTalker(source) : undefined;
+        if (talker) this.setRange(talker);
+        continue;
+      }
       const talker = this.bucketTalker(source);
       const old = this.buckets.get(id);
       if (old && talker) {
