@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/aifivem/ai-voice/compare/v0.1.5...v0.2.0) (2026-11-16)
+
+
+### New Features
+
+* **voice:** per-player proximity range on FiveM Enhanced build 177+, one spatial channel per bucket ([cd05167](https://github.com/aifivem/ai-voice/commit/cd05167e24e4fd89d9589e3272501eead11092f6))
+
+
+### Bug Fixes
+
+* **voice:** range probe back to the throw rule; client range override noted as unverified ([6999d90](https://github.com/aifivem/ai-voice/commit/6999d90c96781e7848d81c71c7a733220013e343))
+* **voice:** range set before joining, rewritten every second, probe checks the native's answer ([c72202b](https://github.com/aifivem/ai-voice/commit/c72202b77da1ca20647c47f7c5abbd36b30b779b))
+
+
+### Code Refactoring
+
+* **voice:** per-player range in its own module ([0461d35](https://github.com/aifivem/ai-voice/commit/0461d35c7dd8630599db6f807975b89cb13404bc))
+
 ## [0.1.5](https://github.com/aifivem/ai-voice/compare/v0.1.4...v0.1.5) (2026-11-02)
 
 
