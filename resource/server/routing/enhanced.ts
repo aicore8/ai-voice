@@ -158,9 +158,7 @@ export class EnhancedRouter implements Router {
 
   private bucketTalker(source: number): Talker | undefined {
     const id = this.bucketOf.get(source);
-    return id === undefined
-      ? undefined
-      : this.buckets.get(id)?.talkers.get(source);
+    if (id !== undefined) return this.buckets.get(id)?.talkers.get(source);
   }
 
   /** The spatial channel a talker is heard in: the shared one, or the one of their range. */
@@ -182,9 +180,8 @@ export class EnhancedRouter implements Router {
     for (const [source, id] of this.bucketOf) {
       const now = GetPlayerRoutingBucket(String(source));
       if (now === id) {
-        // The deprecated client native MUMBLE_SET_TALKER_PROXIMITY writes the same range: written again each second,
-        // a client that changes its own is back at the server's range within 1 s.
-        const talker = this.ranges ? this.bucketTalker(source) : undefined;
+        // Unverified precaution (CLAUDE.md): a deprecated client native may set the same range.
+        const talker = this.ranges && this.bucketTalker(source);
         if (talker) this.ranges?.set(talker);
         continue;
       }

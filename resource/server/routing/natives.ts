@@ -58,17 +58,13 @@ export const voiceNatives = {
 
 /**
  * Whether the server has `SET_PLAYER_VOICE_PROXIMITY_RANGE` (Enhanced build 177 and later): an older build throws on
- * the unknown hash; for server id 0 (nobody) the native answers false (BOOL: 0 in JS), anything else is not it.
+ * the unknown hash (the project's probe rule; how a false BOOL reaches JS on Enhanced is not seen yet, so the answer
+ * for server id 0 is not read).
  */
 export function hasVoiceRange(): boolean {
   try {
-    const answer: unknown = Citizen.invokeNative(
-      HASH.range,
-      "0",
-      0,
-      Citizen.returnResultAnyway(),
-    );
-    return answer === 0 || answer === false;
+    voiceNatives.range(0, 0);
+    return true;
   } catch {
     return false;
   }
