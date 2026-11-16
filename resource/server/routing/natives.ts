@@ -10,6 +10,7 @@ const HASH = {
   leave: "0xDB325A2D", // REMOVE_PLAYER_FROM_VOICE_CHANNEL(int channel, int client)
   mute: "0x2A1DEA36", // SET_PLAYER_MUTED_IN_VOICE_CHANNEL(int channel, int client, bool muted)
   deaf: "0x3469B8AC", // SET_PLAYER_DEAF_IN_VOICE_CHANNEL(int channel, int client, bool deaf)
+  range: "0xE7AC6D1B", // SET_PLAYER_VOICE_PROXIMITY_RANGE(char* playerSrc, float range) -> BOOL (b177)
 } as const;
 
 /** `CreateVoiceChannel` answers this when the 65535 channels are used up. */
@@ -43,7 +44,28 @@ export const voiceNatives = {
     Citizen.invokeNative(HASH.mute, channel, source, muted),
   deaf: (channel: number, source: number, deaf: boolean): void =>
     Citizen.invokeNative(HASH.deaf, channel, source, deaf),
+  /** How far the player is heard in spatial channels (only shortens a channel's maxDistance; 0 = the channel's). */
+  range: (source: number, distance: number): void =>
+    Citizen.invokeNative(
+      HASH.range,
+      String(source),
+      float(distance),
+      Citizen.returnResultAnyway(),
+    ),
 };
+
+/**
+ * Whether the server has `SET_PLAYER_VOICE_PROXIMITY_RANGE` (Enhanced build 177 and later): an older build throws on
+ * the unknown hash; for a server id nobody has it answers without throwing.
+ */
+export function hasVoiceRange(): boolean {
+  try {
+    voiceNatives.range(0, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Whether this server has the Enhanced voice API: two channels must come back with distinct ids below the limit

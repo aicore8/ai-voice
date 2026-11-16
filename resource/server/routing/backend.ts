@@ -4,7 +4,7 @@ import type { Backend } from "common/backend";
 import { content } from "../content";
 import { EnhancedRouter } from "./enhanced";
 import { MumbleRouter } from "./mumble";
-import { hasEnhancedVoice } from "./natives";
+import { hasEnhancedVoice, hasVoiceRange } from "./natives";
 import type { Router } from "./router";
 
 const log = createLogger(ResourceName);
@@ -19,7 +19,17 @@ function chooseBackend(): Backend {
 }
 
 export const backend = chooseBackend();
+const ranged = backend === "enhanced" && hasVoiceRange();
+if (backend === "enhanced")
+  log.info(
+    ranged
+      ? "Enhanced voice: range per player (SET_PLAYER_VOICE_PROXIMITY_RANGE)"
+      : "Enhanced voice: no range native on this build, one channel per range",
+  );
 export const router: Router =
   backend === "enhanced"
-    ? new EnhancedRouter(() => content.settings.modes.map((m) => m.distance))
+    ? new EnhancedRouter(
+        () => content.settings.modes.map((m) => m.distance),
+        ranged,
+      )
     : new MumbleRouter();

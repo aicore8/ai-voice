@@ -1,13 +1,19 @@
 import { every, type Job } from "@aifivem/lib/server";
+import { RANGE_MAX } from "common/proximity";
 import { Bucket } from "./bucket";
 import type { VoiceChannel } from "./channel";
 import { flatChannel, leaveFlatChannel } from "./flatChannels";
+import { voiceNatives } from "./natives";
 import type { Router, Talker } from "./router";
 
 /**
  * FiveM for GTAV Enhanced: the server routes all audio.
- * - Proximity: per routing bucket one spatial channel per range; every player is in all of their bucket's channels and
- *   unmuted only in the one of their range, so they hear everyone and are heard at their own range.
+ * - Proximity with `SET_PLAYER_VOICE_PROXIMITY_RANGE` (build 177+, `ranged`): per routing bucket one spatial channel
+ *   as far as the longest allowed range (`RANGE_MAX`); each player's own range is set on the player, so a range
+ *   change is one native and no channel moves.
+ * - Proximity on older builds: per routing bucket one spatial channel per range; every player is in all of their
+ *   bucket's channels and unmuted only in the one of their range, so they hear everyone and are heard at their own
+ *   range.
  * - Radio: a 2D channel per frequency, members muted until push-to-talk. Calls: a 2D channel per call, unmuted.
  * FiveM has no routing bucket event, so a 1 s job moves players whose bucket changed.
  */
@@ -20,8 +26,11 @@ export class EnhancedRouter implements Router {
   private readonly calls = new Map<number, VoiceChannel>();
   private readonly timer: Job;
 
-  /** `modeDistances`: the panel's ranges, whose channels stay while empty. */
-  constructor(private readonly modeDistances: () => readonly number[]) {
+  /** `modeDistances`: the panel's ranges, whose channels stay while empty; `ranged`: the range native exists. */
+  constructor(
+    private readonly modeDistances: () => readonly number[],
+    private readonly ranged: boolean,
+  ) {
     this.timer = every(1000, () => this.watchBuckets(), {
       name: "voiceBuckets",
     });
@@ -32,9 +41,11 @@ export class EnhancedRouter implements Router {
     this.bucketOf.set(talker.source, bucketId);
     const bucket = this.bucket(bucketId);
     bucket.talkers.set(talker.source, talker);
-    bucket.channel(talker.distance);
+    const own = this.channelOf(talker);
+    bucket.channel(own);
     for (const [distance, channel] of bucket.channels)
-      channel.add(talker.source, talker.muted || distance !== talker.distance);
+      channel.add(talker.source, talker.muted || distance !== own);
+    if (this.ranged) voiceNatives.range(talker.source, talker.distance);
   }
 
   forget(source: number): void {
@@ -55,12 +66,11 @@ export class EnhancedRouter implements Router {
     const bucket = bucketId === undefined ? null : this.buckets.get(bucketId);
     if (bucketId === undefined || !bucket) return this.join(talker);
     bucket.talkers.set(talker.source, talker);
-    bucket.channel(talker.distance);
+    const own = this.channelOf(talker);
+    bucket.channel(own);
     for (const [distance, channel] of bucket.channels)
-      channel.setMuted(
-        talker.source,
-        talker.muted || distance !== talker.distance,
-      );
+      channel.setMuted(talker.source, talker.muted || distance !== own);
+    if (this.ranged) voiceNatives.range(talker.source, talker.distance);
     for (const channel of this.calls.values())
       channel.setMuted(talker.source, talker.muted);
     if (talker.muted)
@@ -114,6 +124,9 @@ export class EnhancedRouter implements Router {
 
   stop(): void {
     this.timer.stop();
+    // The range stays on the player otherwise: another voice script would start with it.
+    if (this.ranged)
+      for (const source of this.bucketOf.keys()) voiceNatives.range(source, 0);
     for (const bucket of this.buckets.values())
       for (const channel of bucket.channels.values()) channel.destroy();
     for (const channel of this.radios.values()) channel.destroy();
@@ -124,7 +137,11 @@ export class EnhancedRouter implements Router {
   }
 
   describe(): string[] {
-    const lines: string[] = [];
+    const lines = [
+      this.ranged
+        ? "proximity: range per player, one channel per bucket"
+        : "proximity: one channel per range",
+    ];
     for (const [id, bucket] of this.buckets)
       for (const channel of bucket.channels.values())
         lines.push(`bucket ${id}: ${channel.describe()}`);
@@ -135,7 +152,8 @@ export class EnhancedRouter implements Router {
 
   private bucket(id: number): Bucket {
     let bucket = this.buckets.get(id);
-    if (!bucket) this.buckets.set(id, (bucket = new Bucket()));
+    if (!bucket)
+      this.buckets.set(id, (bucket = new Bucket((t) => this.channelOf(t))));
     return bucket;
   }
 
@@ -146,6 +164,11 @@ export class EnhancedRouter implements Router {
       : this.buckets.get(id)?.talkers.get(source);
   }
 
+  /** The spatial channel a talker is heard in: the shared one, or the one of their range. */
+  private channelOf(talker: Talker): number {
+    return this.ranged ? RANGE_MAX : talker.distance;
+  }
+
   /** Drops channels of custom ranges nobody talks at, and empty buckets. */
   private prune(id: number, bucket: Bucket): void {
     if (bucket.talkers.size === 0) {
@@ -153,7 +176,7 @@ export class EnhancedRouter implements Router {
       this.buckets.delete(id);
       return;
     }
-    bucket.pruneChannels(this.modeDistances());
+    bucket.pruneChannels(this.ranged ? [RANGE_MAX] : this.modeDistances());
   }
 
   private watchBuckets(): void {
