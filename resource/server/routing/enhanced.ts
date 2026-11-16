@@ -163,7 +163,6 @@ export class EnhancedRouter implements Router {
       : this.buckets.get(id)?.talkers.get(source);
   }
 
-  /** Ranged mode: the talker's range on the player (a false answer is logged once). */
   /** The spatial channel a talker is heard in: the shared one, or the one of their range. */
   private channelOf(talker: Talker): number {
     return this.ranged ? RANGE_MAX : talker.distance;
