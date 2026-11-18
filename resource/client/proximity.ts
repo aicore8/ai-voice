@@ -1,4 +1,4 @@
-import { cache, Keybind } from "@aifivem/lib/client";
+import { cache, Keybind } from "@aicore8/lib/client";
 import { EVENTS, Locale, PMA } from "common";
 import { mumble } from "./mumble";
 import { backendKey, proximityBag, state } from "./state";

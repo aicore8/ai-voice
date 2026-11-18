@@ -1,5 +1,5 @@
-import { AdminPanel } from "@aifivem/lib/server";
-import { isRecord, num } from "@aifivem/lib/shared";
+import { AdminPanel } from "@aicore8/lib/server";
+import { isRecord, num } from "@aicore8/lib/shared";
 import { frequencyOf, readFrequency, type Frequency } from "common/frequency";
 import { readSettings, type Settings } from "common/settings";
 import { seedFromConvars } from "./convars";

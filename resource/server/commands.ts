@@ -1,5 +1,5 @@
-import { addCommand } from "@aifivem/lib/server";
-import { createLogger } from "@aifivem/lib/shared";
+import { addCommand } from "@aicore8/lib/server";
+import { createLogger } from "@aicore8/lib/shared";
 import { Locale, ResourceName } from "common";
 import type { Groups } from "./groups/groups";
 import type { Mutes } from "./mute";

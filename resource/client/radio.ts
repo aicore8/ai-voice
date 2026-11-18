@@ -4,7 +4,7 @@ import {
   medical,
   onServerEvent,
   TickLoop,
-} from "@aifivem/lib/client";
+} from "@aicore8/lib/client";
 import { EVENTS, Locale, PMA } from "common";
 import { radioAnim } from "./anim";
 import { effects, micClick } from "./effects";

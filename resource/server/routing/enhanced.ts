@@ -1,4 +1,4 @@
-import { every, type Job } from "@aifivem/lib/server";
+import { every, type Job } from "@aicore8/lib/server";
 import { RANGE_MAX } from "common/proximity";
 import { Bucket } from "./bucket";
 import type { VoiceChannel } from "./channel";

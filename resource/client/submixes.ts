@@ -1,4 +1,4 @@
-import { isRecord } from "@aifivem/lib/shared";
+import { isRecord } from "@aicore8/lib/shared";
 import { log } from "./state";
 
 /** What a submix does: the radio filter, its parameters, the speaker volumes. Every field optional. */

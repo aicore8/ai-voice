@@ -1,5 +1,5 @@
-import { onCharacter } from "@aifivem/lib/server";
-import { CORE } from "@aifivem/shared";
+import { onCharacter } from "@aicore8/lib/server";
+import { CORE } from "@aicore8/shared";
 import { content } from "../content";
 import { groups, players } from "../state";
 

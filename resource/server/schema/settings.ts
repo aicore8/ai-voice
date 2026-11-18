@@ -1,4 +1,4 @@
-import type { FileSpec, TabSpec } from "@aifivem/shared";
+import type { FileSpec, TabSpec } from "@aicore8/shared";
 import { ANIM_SET_NAMES } from "common/anim";
 import { RANGE_MAX, RANGE_MIN } from "common/proximity";
 import { SETTINGS_DEFAULTS } from "./defaults";

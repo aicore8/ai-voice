@@ -4,9 +4,9 @@ import {
   PlayerState,
   stateBoolean,
   stateString,
-} from "@aifivem/lib/client";
-import { createLogger, isRecord } from "@aifivem/lib/shared";
-import { PLAYER_BAGS } from "@aifivem/shared";
+} from "@aicore8/lib/client";
+import { createLogger, isRecord } from "@aicore8/lib/shared";
+import { PLAYER_BAGS } from "@aicore8/shared";
 import { KEYS, ResourceName } from "common";
 import { parseBackend } from "common/backend";
 import { readFrequency } from "common/frequency";

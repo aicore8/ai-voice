@@ -1,5 +1,5 @@
-import { GlobalKey, onStop } from "@aifivem/lib/server";
-import { createLogger } from "@aifivem/lib/shared";
+import { GlobalKey, onStop } from "@aicore8/lib/server";
+import { createLogger } from "@aicore8/lib/shared";
 import { ResourceName } from "common";
 import { parseBackend } from "common/backend";
 import { KEYS } from "common/voice";

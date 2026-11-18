@@ -1,4 +1,4 @@
-import { createLogger } from "@aifivem/lib/shared";
+import { createLogger } from "@aicore8/lib/shared";
 import { ResourceName } from "common";
 import { voiceNatives } from "./natives";
 import type { Talker } from "./router";

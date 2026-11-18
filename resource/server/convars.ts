@@ -1,6 +1,6 @@
-import { createLogger } from "@aifivem/lib/shared";
+import { createLogger } from "@aicore8/lib/shared";
 import { ResourceName } from "common";
-import type { AdminPanel } from "@aifivem/lib/server";
+import type { AdminPanel } from "@aicore8/lib/server";
 import { SETTINGS_DEFAULTS } from "./schema/defaults";
 
 const log = createLogger(ResourceName);

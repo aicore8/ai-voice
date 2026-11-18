@@ -1,4 +1,4 @@
-import { caller, registerExport } from "@aifivem/lib/client";
+import { caller, registerExport } from "@aicore8/lib/client";
 import { PMA } from "common";
 import { effects } from "./effects";
 import { log } from "./state";

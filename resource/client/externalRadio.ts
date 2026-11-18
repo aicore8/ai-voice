@@ -1,4 +1,4 @@
-import { fromServer } from "@aifivem/lib/client";
+import { fromServer } from "@aicore8/lib/client";
 import { EXTERNAL, PMA } from "common";
 import { parseMembers } from "./members";
 import { retarget } from "./retarget";

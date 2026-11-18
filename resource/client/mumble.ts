@@ -1,5 +1,5 @@
-import { ByResource, cache, every } from "@aifivem/lib/client";
-import { waitFor } from "@aifivem/lib/shared";
+import { ByResource, cache, every } from "@aicore8/lib/client";
+import { waitFor } from "@aicore8/lib/shared";
 import { log, proximityBag, state } from "./state";
 
 const TARGET = 1;

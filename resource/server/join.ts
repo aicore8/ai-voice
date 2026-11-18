@@ -1,4 +1,4 @@
-import { eventSource } from "@aifivem/lib/server";
+import { eventSource } from "@aicore8/lib/server";
 import { callBag, proximityBag, radioBag } from "./players";
 import { groups, mutes, players, speakers } from "./state";
 

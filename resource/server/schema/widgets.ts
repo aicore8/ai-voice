@@ -1,4 +1,4 @@
-import type { WidgetSpec } from "@aifivem/shared";
+import type { WidgetSpec } from "@aicore8/shared";
 
 /** A 0-100 % number field. */
 export const pct = (path: string, label: string, hint: string): WidgetSpec => ({
